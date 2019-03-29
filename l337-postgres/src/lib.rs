@@ -13,7 +13,7 @@ use tokio_postgres::error::Error;
 use tokio_postgres::{
     Client, 
     tls::MakeTlsConnect,
-    NoTls
+    NoTls,
     Socket
 };
 
