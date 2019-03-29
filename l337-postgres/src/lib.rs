@@ -2,7 +2,7 @@
 // #![deny(missing_docs, missing_debug_implementations)]
 
 extern crate futures;
-pub extern crate l3_37;
+pub extern crate l337;
 extern crate tokio;
 pub extern crate tokio_postgres;
 
