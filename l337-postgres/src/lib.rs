@@ -74,7 +74,7 @@ impl l337::ManageConnection for PostgresConnectionManager {
         // If we can execute this without erroring, we're definitely still connected to the datbase
         Box::new(
             conn.client
-                .batch_execute("")
+                .execute("")
                 .map_err(|e| l337::Error::External(e)),
         )
     }
