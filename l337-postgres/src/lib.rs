@@ -10,8 +10,11 @@ use futures::sync::oneshot;
 use futures::{Async, Future};
 use tokio::executor::spawn;
 use tokio_postgres::error::Error;
-use tokio_postgres::params::ConnectParams;
-use tokio_postgres::{Client, TlsMode};
+use tokio_postgres::{
+    Client, 
+    tls::MakeTlsConnect,
+    Socket
+};
 
 use std::fmt;
 
@@ -26,14 +29,14 @@ pub struct AsyncConnection {
 /// A `ManageConnection` for `tokio_postgres::Connection`s.
 pub struct PostgresConnectionManager {
     params: ConnectParams,
-    tls_mode: Box<Fn() -> TlsMode + Send + Sync>,
+    tls_mode: Box<Fn() -> MakeTlsConnect<Socket> + Send + Sync>,
 }
 
 impl PostgresConnectionManager {
     /// Create a new `PostgresConnectionManager`.
-    pub fn new<F>(params: ConnectParams, tls_mode: F) -> Result<PostgresConnectionManager>
+    pub fn new<F>(params: &str, tls_mode: F) -> Result<PostgresConnectionManager>
     where
-        F: Fn() -> TlsMode + Send + Sync + 'static,
+        F: Fn() -> MakeTlsConnect<Socket> + Send + Sync + 'static,
     {
         Ok(PostgresConnectionManager {
             params: params,
@@ -42,13 +45,13 @@ impl PostgresConnectionManager {
     }
 }
 
-impl l3_37::ManageConnection for PostgresConnectionManager {
+impl l337::ManageConnection for PostgresConnectionManager {
     type Connection = AsyncConnection;
     type Error = Error;
 
     fn connect(
         &self,
-    ) -> Box<Future<Item = Self::Connection, Error = l3_37::Error<Self::Error>> + 'static + Send>
+    ) -> Box<Future<Item = Self::Connection, Error = l337::Error<Self::Error>> + 'static + Send>
     {
         Box::new(
             tokio_postgres::connect(self.params.clone(), (self.tls_mode)())
@@ -71,7 +74,7 @@ impl l3_37::ManageConnection for PostgresConnectionManager {
     fn is_valid(
         &self,
         mut conn: Self::Connection,
-    ) -> Box<Future<Item = (), Error = l3_37::Error<Self::Error>>> {
+    ) -> Box<Future<Item = (), Error = l337::Error<Self::Error>>> {
         // If we can execute this without erroring, we're definitely still connected to the datbase
         Box::new(
             conn.client
@@ -100,7 +103,7 @@ impl l3_37::ManageConnection for PostgresConnectionManager {
         }
     }
 
-    fn timed_out(&self) -> l3_37::Error<Self::Error> {
+    fn timed_out(&self) -> l337::Error<Self::Error> {
         unimplemented!()
         // Error::io(io::ErrorKind::TimedOut.into())
     }
@@ -118,7 +121,7 @@ impl fmt::Debug for PostgresConnectionManager {
 mod tests {
     use super::*;
     use futures::Stream;
-    use l3_37::{Config, Pool};
+    use l337::{Config, Pool};
     use std::thread::sleep;
     use std::time::Duration;
     use tokio::runtime::current_thread::Runtime;
