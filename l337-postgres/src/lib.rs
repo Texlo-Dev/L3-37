@@ -30,18 +30,13 @@ pub struct AsyncConnection {
 /// A `ManageConnection` for `tokio_postgres::Connection`s.
 pub struct PostgresConnectionManager {
     params: String,
-    tls_mode: Box<Fn() -> MakeTlsConnect<Socket> + Send + Sync>,
 }
 
 impl PostgresConnectionManager {
     /// Create a new `PostgresConnectionManager`.
-    pub fn new<F>(params: &str, tls_mode: F) -> Result<PostgresConnectionManager>
-    where
-        F: Fn() -> MakeTlsConnect<Socket> + Send + Sync + 'static,
-    {
+    pub fn new(params: &str) -> Result<PostgresConnectionManager> {
         Ok(PostgresConnectionManager {
             params: params.to_string(),
-            tls_mode: Box::new(tls_mode),
         })
     }
 }
@@ -55,7 +50,7 @@ impl l337::ManageConnection for PostgresConnectionManager {
     ) -> Box<Future<Item = Self::Connection, Error = l337::Error<Self::Error>> + 'static + Send>
     {
         Box::new(
-            tokio_postgres::connect(&self.params, (self.tls_mode)())
+            tokio_postgres::connect(&self.params, NoTls)
                 .map(|(client, connection)| {
                     let (sender, receiver) = oneshot::channel();
                     spawn(connection.map_err(|_| {
