@@ -70,13 +70,8 @@ impl l337::ManageConnection for PostgresConnectionManager {
     fn is_valid(
         &self,
         mut conn: Self::Connection,
-    ) -> Box<Future<Item = (), Error = l337::Error<Self::Error>>> {
-        // If we can execute this without erroring, we're definitely still connected to the datbase
-        Box::new(
-            conn.client
-                .execute("")
-                .map_err(|e| l337::Error::External(e)),
-        )
+    ) -> bool {
+        conn.client.is_closed()
     }
 
     fn has_broken(&self, conn: &mut Self::Connection) -> bool {
