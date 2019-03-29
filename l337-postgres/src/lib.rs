@@ -13,6 +13,7 @@ use tokio_postgres::error::Error;
 use tokio_postgres::{
     Client, 
     tls::MakeTlsConnect,
+    NoTls
     Socket
 };
 
@@ -67,7 +68,7 @@ impl l337::ManageConnection for PostgresConnectionManager {
                         client,
                         receiver,
                     }
-                }).map_err(|e| l3_37::Error::External(e)),
+                }).map_err(|e| l337::Error::External(e)),
         )
     }
 
@@ -79,7 +80,7 @@ impl l337::ManageConnection for PostgresConnectionManager {
         Box::new(
             conn.client
                 .batch_execute("")
-                .map_err(|e| l3_37::Error::External(e)),
+                .map_err(|e| l337::Error::External(e)),
         )
     }
 
@@ -133,7 +134,7 @@ mod tests {
             "postgres://pass_user:password@localhost:5433/postgres"
                 .into_connect_params()
                 .unwrap(),
-            || tokio_postgres::TlsMode::None,
+            || NoTls,
         ).unwrap();
 
         let mut runtime = Runtime::new().expect("could not run");
@@ -161,7 +162,7 @@ mod tests {
             "postgres://pass_user:password@localhost:5433/postgres"
                 .into_connect_params()
                 .unwrap(),
-            || tokio_postgres::TlsMode::None,
+            || NoTls,
         ).unwrap();
 
         let mut runtime = Runtime::new().expect("could not run");
@@ -178,7 +179,7 @@ mod tests {
                     }).map(|connection| {
                         sleep(Duration::from_secs(5));
                         ((), connection)
-                    }).map_err(|e| l3_37::Error::External(e))
+                    }).map_err(|e| l337::Error::External(e))
             });
 
             let q2 = pool.connection().and_then(|mut conn| {
@@ -192,7 +193,7 @@ mod tests {
                     }).map(|connection| {
                         sleep(Duration::from_secs(5));
                         ((), connection)
-                    }).map_err(|e| l3_37::Error::External(e))
+                    }).map_err(|e| l337::Error::External(e))
             });
 
             q1.join(q2)
@@ -207,7 +208,7 @@ mod tests {
             "postgres://pass_user:password@localhost:5433/postgres"
                 .into_connect_params()
                 .unwrap(),
-            || tokio_postgres::TlsMode::None,
+            || NoTls
         ).unwrap();
 
         let mut runtime = Runtime::new().expect("could not run");
@@ -224,7 +225,7 @@ mod tests {
                     }).map(|connection| {
                         sleep(Duration::from_secs(5));
                         ((), connection)
-                    }).map_err(|e| l3_37::Error::External(e))
+                    }).map_err(|e| l337::Error::External(e))
             });
 
             let q2 = pool.connection().and_then(|mut conn| {
@@ -238,7 +239,7 @@ mod tests {
                     }).map(|connection| {
                         sleep(Duration::from_secs(5));
                         ((), connection)
-                    }).map_err(|e| l3_37::Error::External(e))
+                    }).map_err(|e| l337::Error::External(e))
             });
 
             let q3 = pool.connection().and_then(|mut conn| {
@@ -252,7 +253,7 @@ mod tests {
                     }).map(|connection| {
                         sleep(Duration::from_secs(5));
                         ((), connection)
-                    }).map_err(|e| l3_37::Error::External(e))
+                    }).map_err(|e| l337::Error::External(e))
             });
 
             q1.join3(q2, q3)
